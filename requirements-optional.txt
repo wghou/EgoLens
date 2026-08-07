@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# External VLM APIs and S3-compatible image loading.
+megfile==4.1.6
+openai==2.32.0
