@@ -1,0 +1,67 @@
+# Convenience wrapper around docker/Dockerfile.
+#
+#   cd docker
+#   docker compose build
+#   docker compose run --rm egolens                     # interactive shell
+#   docker compose run --rm egolens bash train_qwen2p5_3b_full.sh
+#
+# The image is self-contained: the source tree is cloned from GitHub at build time
+# into /workspace/EgoLens and nothing is mounted from the host. Datasets and
+# checkpoints are out of scope; add your own mounts or fetch them in-container.
+
+services:
+  egolens:
+    image: egolens:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Branch, tag or commit sha to build from.
+        EGOLENS_REF: main
+        # Compile only for the GPUs you actually run on; each extra arch costs
+        # build time. 8.0=A100, 8.6=A6000/3090, 8.9=4090/L40S, 9.0=H100/H200.
+        TORCH_CUDA_ARCH_LIST: "8.9;9.0+PTX"
+        MAX_JOBS: "8"
+
+    working_dir: /workspace/EgoLens
+    stdin_open: true
+    tty: true
+    command: ["bash"]
+
+    # NCCL and the dataloader need a large shared-memory segment.
+    ipc: host
+    shm_size: "32gb"
+    ulimits:
+      memlock: -1
+      stack: 67108864
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    volumes:
+      # Docker-managed volume, not a host path. Keeps the HuggingFace / torch
+      # caches across `--rm` runs so models are not re-downloaded every time.
+      - egolens-cache:/cache
+
+    environment:
+      # Offline by default so a missing API key does not stall training.
+      WANDB_MODE: offline
+      # Uncomment to pin visible GPUs.
+      # NVIDIA_VISIBLE_DEVICES: "0"
+      #
+      # sshd is opt-in and refuses to start without credentials. Prefer a key.
+      # ENABLE_SSH: "1"
+      # SSH_PUBKEY: "ssh-ed25519 AAAA... you@host"
+
+    # Only publish this when ENABLE_SSH=1 is set above. Binding to 127.0.0.1
+    # keeps the container off the network; drop the prefix deliberately.
+    # ports:
+    #   - "127.0.0.1:2222:22"
+
+volumes:
+  egolens-cache:

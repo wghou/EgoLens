@@ -1,0 +1,3 @@
+# The image clones its source from GitHub and copies nothing from the host, so the
+# build context is deliberately empty.
+*
