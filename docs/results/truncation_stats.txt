@@ -1,0 +1,27 @@
+samples          15049
+max_length       2048
+prompt_difficulty hard
+
+
+=== token length (untruncated) ===
+  p50  1553
+  p90  1644
+  p95  1671
+  p99  1722
+  p100 1936
+  mean 1558  max 1936
+  > 1024   15049  (100.00%)
+  > 1536    8766  (58.25%)
+  > 2048       0  (0.00%)
+  > 2560       0  (0.00%)
+  > 3072       0  (0.00%)
+
+=== truncated at 2048 ===
+  0/15049  (0.00%)
+
+=== build_answer_only_labels branch ===
+  ok         15049  (100.00%)
+  no_super       0  (0.00%)
+  full           0  (0.00%)
+
+  samples with zero supervised tokens: 0 (0.00%)

@@ -1,0 +1,116 @@
+{
+  "generated": {
+    "overall": {
+      "giou": 0.6070943905578636,
+      "ciou": 0.39187694176722054,
+      "first_step_sim": 0.6277398152774885,
+      "sim": 0.45780218468258843,
+      "order": 0.8334309141378783,
+      "coverage": 0.5342021269846836,
+      "constraint": 0.5917861692136863,
+      "hard_constraint": 0.4979508094682211,
+      "dag_f1": 0.6548513684768867
+    },
+    "components": {
+      "direct_object": {
+        "gIoU": 0.5468587625623551,
+        "cIoU": 0.37010196184993316,
+        "non_empty_mIoU": 0.533635918847125,
+        "presence_rate": 0.9057377049180327,
+        "presence_precision": 0.9662921348314607,
+        "presence_recall": 0.9728506787330317,
+        "presence_f1": 0.9695603156708005,
+        "gt_present_count": 442,
+        "presence_tp": 430,
+        "presence_fp": 15,
+        "presence_fn": 12,
+        "presence_tn": 31
+      },
+      "instrument": {
+        "gIoU": 0.6614125665016263,
+        "cIoU": 0.2318819334560678,
+        "non_empty_mIoU": 0.3357421682474785,
+        "presence_rate": 0.3709016393442623,
+        "presence_precision": 0.7413793103448276,
+        "presence_recall": 0.712707182320442,
+        "presence_f1": 0.7267605633802817,
+        "gt_present_count": 181,
+        "presence_tp": 129,
+        "presence_fp": 45,
+        "presence_fn": 52,
+        "presence_tn": 262
+      },
+      "destination": {
+        "gIoU": 0.6130121619712181,
+        "cIoU": 0.4182906354042849,
+        "non_empty_mIoU": 0.5439438976458213,
+        "presence_rate": 0.6598360655737705,
+        "presence_precision": 0.8683385579937304,
+        "presence_recall": 0.860248447204969,
+        "presence_f1": 0.8642745709828393,
+        "gt_present_count": 322,
+        "presence_tp": 277,
+        "presence_fp": 42,
+        "presence_fn": 45,
+        "presence_tn": 124
+      }
+    }
+  },
+  "real": {
+    "overall": {
+      "giou": 0.6396807791905026,
+      "ciou": 0.34737425881904477,
+      "first_step_sim": 0.5848656249255706,
+      "sim": 0.40288072263950864,
+      "order": 0.8176936675600954,
+      "coverage": 0.4479533111616124,
+      "constraint": 0.6042016128884754,
+      "hard_constraint": 0.5294117128027732,
+      "dag_f1": 0.6496731738266572
+    },
+    "components": {
+      "direct_object": {
+        "gIoU": 0.4452192091549103,
+        "cIoU": 0.42805083796515814,
+        "non_empty_mIoU": 0.4397263300376322,
+        "presence_rate": 0.9901960784313726,
+        "presence_precision": 1.0,
+        "presence_recall": 1.0,
+        "presence_f1": 1.0,
+        "gt_present_count": 101,
+        "presence_tp": 101,
+        "presence_fp": 0,
+        "presence_fn": 0,
+        "presence_tn": 1
+      },
+      "instrument": {
+        "gIoU": 0.9154135968317004,
+        "cIoU": 0.4944772827525364,
+        "non_empty_mIoU": 0.5310155730694532,
+        "presence_rate": 0.11764705882352941,
+        "presence_precision": 0.7692307692307693,
+        "presence_recall": 0.8333333333333334,
+        "presence_f1": 0.8,
+        "gt_present_count": 12,
+        "presence_tp": 10,
+        "presence_fp": 3,
+        "presence_fn": 2,
+        "presence_tn": 87
+      },
+      "destination": {
+        "gIoU": 0.5584091917553451,
+        "cIoU": 0.27838822157832305,
+        "non_empty_mIoU": 0.40518460230500286,
+        "presence_rate": 0.6764705882352942,
+        "presence_precision": 0.9384615384615385,
+        "presence_recall": 0.8840579710144928,
+        "presence_f1": 0.9104477611940298,
+        "gt_present_count": 69,
+        "presence_tp": 61,
+        "presence_fp": 4,
+        "presence_fn": 8,
+        "presence_tn": 29
+      }
+    }
+  }
+}

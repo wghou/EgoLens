@@ -1,0 +1,63 @@
+===============================================================
+ EgoLens full-task evaluation
+ checkpoint  /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full
+ split       generated
+ started     2026-08-14T16:27:23+08:00
+ log         /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/logs/eval_20260814_162723.log
+===============================================================
+--- environment -------------------------------------------------------
+  index, name, memory.total [MiB], compute_cap, driver_version
+  0, NVIDIA H20-3e, 143771 MiB, 9.0, 570.86.10
+  host   de-55471-0811203146-q7m8s-0811203149-cdb955f96-gks4n-rc | cpu affinity 66 of 192 | ram 2011 GB
+  commit 44358df10e8f2bcd51946185953e7c93538ab955
+[16:27:23] using 1/1 GPU, TORCH_CUDA_ARCH_LIST=9.0
+--- bootstrap ---------------------------------------------------------
+[16:27:23] symlinks wired to /mnt/robot/robot2/system-architecture-data/wghou-disk
+[16:27:25] sam2 extension valid for sm_90
+--- preflight ---------------------------------------------------------
+[2026-08-14 16:27:29,604] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+  cross-encoder  cross-encoder/stsb-roberta-base
+    synonymous 0.9967 | unrelated 0.0024
+  EgoAfford        data/EgoAfford (2000 scenes, 100 with alternatives.json)
+  checkpoint       /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full
+  results to       /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi[_real]
+  gpus             1
+  vis              off
+--- evaluating EgoAfford ----------------------------------------------
+[16:27:33] detail log /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/logs/eval_EgoAfford_20260814_162733.log
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
+Loading checkpoint shards:  50%|█████     | 1/2 [00:09<00:09,  9.28s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:15<00:00,  7.58s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:15<00:00,  7.84s/it]
+evaluation on EgoAfford: giou=0.6098808705513175, ciou=0.39500200330922297, first_step_sim=0.6289787163591388, sim=0.45780218468258843, order=0.8334309141378783, coverage=0.5342021269846836, constraint=0.5917861692136863, hard_constraint=0.4979508094682211, dag_f1=0.6548513684768867
+  direct_object: gIoU=0.5477, cIoU=0.3671, non_empty_mIoU=0.5346, presence_rate=0.9057, presence_F1=0.9696
+  instrument: gIoU=0.6659, cIoU=0.2522, non_empty_mIoU=0.3479, presence_rate=0.3709, presence_F1=0.7268
+  destination: gIoU=0.6160, cIoU=0.4243, non_empty_mIoU=0.5485, presence_rate=0.6598, presence_F1=0.8643
+[17:13:59] EgoAfford finished
+--- summary -----------------------------------------------------------
+  status      SUCCESS
+  wall time   00h46m36s
+  results     /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi
+                /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi/egoaff_metrics_by_scene.json
+                /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi/egoaff_metrics.json
+                /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi/egoaff.txt
+                Model path: /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full
+                evaluation on EgoAfford: giou=0.6098808705513175, ciou=0.39500200330922297, first_step_sim=0.6289787163591388, sim=0.45780218468258843, order=0.8334309141378783, coverage=0.5342021269846836, constraint=0.5917861692136863, hard_constraint=0.4979508094682211, dag_f1=0.6548513684768867
+                component-wise metrics:
+                  direct_object: {"gIoU": 0.5477295963420095, "cIoU": 0.3670783746825402, "non_empty_mIoU": 0.534597382386653, "presence_rate": 0.9057377049180327, "presence_precision": 0.9662921348314607, "presence_recall": 0.9728506787330317, "presence_f1": 0.9695603156708005, "gt_present_count": 442, "presence_tp": 430, "presence_fp": 15, "presence_fn": 12, "presence_tn": 31}
+                  instrument: {"gIoU": 0.6659172348861562, "cIoU": 0.25221333572075166, "non_empty_mIoU": 0.3478873515162663, "presence_rate": 0.3709016393442623, "presence_precision": 0.7413793103448276, "presence_recall": 0.712707182320442, "presence_f1": 0.7267605633802817, "gt_present_count": 181, "presence_tp": 129, "presence_fp": 45, "presence_fn": 52, "presence_tn": 262}
+                  destination: {"gIoU": 0.6159962967092754, "cIoU": 0.4242950625503806, "non_empty_mIoU": 0.5484664372488397, "presence_rate": 0.6598360655737705, "presence_precision": 0.8683385579937304, "presence_recall": 0.860248447204969, "presence_f1": 0.8642745709828393, "gt_present_count": 322, "presence_tp": 277, "presence_fp": 42, "presence_fn": 45, "presence_tn": 124}
+  results     /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi_real
+                /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi_real/egoaff_metrics_by_scene.json
+                /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi_real/egoaff_metrics.json
+                /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/evaluations_multi_real/egoaff.txt
+                Model path: /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full
+                evaluation on EgoAfford: giou=0.6396807791905026, ciou=0.34737425881904477, first_step_sim=0.5848656249255706, sim=0.40288072263950864, order=0.8176936675600954, coverage=0.4479533111616124, constraint=0.6042016128884754, hard_constraint=0.5294117128027732, dag_f1=0.6496731738266572
+                component-wise metrics:
+                  direct_object: {"gIoU": 0.4452192091549103, "cIoU": 0.42805083796515814, "non_empty_mIoU": 0.4397263300376322, "presence_rate": 0.9901960784313726, "presence_precision": 1.0, "presence_recall": 1.0, "presence_f1": 1.0, "gt_present_count": 101, "presence_tp": 101, "presence_fp": 0, "presence_fn": 0, "presence_tn": 1}
+                  instrument: {"gIoU": 0.9154135968317004, "cIoU": 0.4944772827525364, "non_empty_mIoU": 0.5310155730694532, "presence_rate": 0.11764705882352941, "presence_precision": 0.7692307692307693, "presence_recall": 0.8333333333333334, "presence_f1": 0.8, "gt_present_count": 12, "presence_tp": 10, "presence_fp": 3, "presence_fn": 2, "presence_tn": 87}
+                  destination: {"gIoU": 0.5584091917553451, "cIoU": 0.27838822157832305, "non_empty_mIoU": 0.40518460230500286, "presence_rate": 0.6764705882352942, "presence_precision": 0.9384615384615385, "presence_recall": 0.8840579710144928, "presence_f1": 0.9104477611940298, "gt_present_count": 69, "presence_tp": 61, "presence_fp": 4, "presence_fn": 8, "presence_tn": 29}
+  paper       gIoU 0.700  cIoU 0.486  FirstStepSim 0.666  F1 0.500  CSR 0.624  Cov 0.566  (generated)
+              gIoU 0.666  cIoU 0.455  FirstStepSim 0.631  F1 0.426  CSR 0.609  Cov 0.481  (real)
+  log         /mnt/robot/robot2/system-architecture-data/wghou-disk/ckpts/EgoLens/qwen2p5_sft_full/logs/eval_20260814_162723.log
+===============================================================
