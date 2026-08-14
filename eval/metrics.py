@@ -1,3 +1,4 @@
+import os
 import re
 import torch
 import numpy as np
@@ -7,12 +8,25 @@ from scipy.stats import kendalltau
 from sentence_transformers import SentenceTransformer, util, CrossEncoder
 
 
+# "sentence-transformers/stsb-roberta-base" is a bi-encoder (architectures:
+# ["RobertaModel"]). Loading it through CrossEncoder builds a
+# RobertaForSequenceClassification whose regression head is randomly initialised,
+# so every pair scores ~0.5 regardless of content:
+#
+#   identical sentences 0.558 | synonymous 0.557 | unrelated 0.476
+#
+# All of those fall below the 0.6 threshold used in compute_text_planning_score,
+# which drives semantic F1, coverage and CSR to exactly zero. The STS-B
+# cross-encoder the code actually expects scores 0.997 / 0.997 / 0.002 on the same
+# pairs. Override with EGOLENS_CE_MODEL to reproduce the original behaviour.
+CE_MODEL_ID = os.environ.get("EGOLENS_CE_MODEL", "cross-encoder/stsb-roberta-base")
+
 _CE_MODEL = None
 
 def get_ce_model():
     global _CE_MODEL
     if _CE_MODEL is None:
-        _CE_MODEL = CrossEncoder("sentence-transformers/stsb-roberta-base", device='cuda')
+        _CE_MODEL = CrossEncoder(CE_MODEL_ID, device='cuda')
         _CE_MODEL.eval()
         for param in _CE_MODEL.parameters():
             param.requires_grad = False

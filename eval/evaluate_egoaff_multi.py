@@ -356,7 +356,17 @@ class EgoAffEvaluator:
         ).cuda()
 
         self.model.eval()
-        
+
+        # build_sam2 enables dynamic_multimask_via_stability via apply_postprocessing.
+        # That branch is gated on `not self.training`, so training always supervises
+        # mask token 0 while eval() may substitute a different token based on its
+        # stability score - the model is trained on one output and tested on another.
+        # Default keeps upstream behaviour; set EGOLENS_DYNAMIC_MULTIMASK=0 to pin
+        # token 0 at eval and measure how much that inconsistency costs.
+        if os.environ.get("EGOLENS_DYNAMIC_MULTIMASK", "1") == "0":
+            self.model.sam.sam_mask_decoder.dynamic_multimask_via_stability = False
+            print("[eval] dynamic_multimask_via_stability disabled (pinning mask token 0)")
+
         self.processing_class = AutoProcessor.from_pretrained(args.model_path)
         pad_token_id = self.processing_class.tokenizer.pad_token_id
         self.processing_class.pad_token_id = pad_token_id
