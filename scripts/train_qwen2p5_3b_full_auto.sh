@@ -19,6 +19,12 @@
 #   SMOKE=1 bash scripts/train_qwen2p5_3b_full_auto.sh        # short end-to-end check
 #   SETUP_ONLY=1 bash scripts/train_qwen2p5_3b_full_auto.sh   # bootstrap + report, no training
 #
+#   RES_LOSS_MODE=mean bash scripts/train_qwen2p5_3b_full_auto.sh
+#       Mask loss aggregation. legacy (default) reproduces upstream, where the
+#       empty-mask BCE outweighs the non-empty BCE+Dice by about 3*batch_size and
+#       the non-empty terms sit at 1/3 of lm_loss. norm fixes the first, mean fixes
+#       both. Non-legacy modes append _res<mode> to RUN_NAME.
+#
 # Everything is overridable by environment variable:
 #   GPUS EFFECTIVE_BATCH PER_DEVICE_BS GRAD_ACCUM EPOCHS LR WARMUP_STEPS
 #   DATALOADER_WORKERS SAVE_TOTAL_LIMIT DATASET_SIZE RUN_NAME CKPT_ROOT DISK
@@ -52,6 +58,19 @@ MODEL_PATH="${MODEL_PATH:-./pretrained/Qwen/Qwen2.5-VL-3B-Instruct}"
 SAM_CKPT="./pretrained/sam2_hiera_large.pt"   # path is hardcoded in trainer_sft.py
 
 RUN_NAME="${RUN_NAME:-qwen2p5_sft_full}"
+
+# How the three mask loss terms are combined; see compute_loss in trainer_sft.py.
+# legacy reproduces upstream, norm removes the empty-term over-weighting, mean
+# removes that and the extra 1/3 on the non-empty terms. Anything other than legacy
+# gets its own run name so results never overwrite an existing run. Resolved here
+# rather than with the other hyperparameters because RUN_NAME feeds OUTPUT_DIR.
+RES_LOSS_MODE="${RES_LOSS_MODE:-legacy}"
+case "${RES_LOSS_MODE}" in
+    legacy)    ;;
+    norm|mean) RUN_NAME="${RUN_NAME}_res${RES_LOSS_MODE}" ;;
+    *) echo "[error] RES_LOSS_MODE must be legacy, norm or mean" >&2; exit 1 ;;
+esac
+
 [[ "${SMOKE:-0}" == "1" ]] && RUN_NAME="${RUN_NAME}_smoke"
 
 log()  { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
@@ -285,6 +304,7 @@ printf '  %-14s %s\n' \
     "free space" "${FREE_GB:-?} GB" \
     "batch"     "${PER_DEVICE_BS} x ${GRAD_ACCUM} accum x ${GPUS} gpu = $((PER_DEVICE_BS * GRAD_ACCUM * GPUS)) effective" \
     "epochs"    "${EPOCHS} | lr ${LR} | warmup ${WARMUP_STEPS}" \
+    "mask loss"  "${RES_LOSS_MODE}" \
     "workers"   "${DATALOADER_WORKERS} per rank" \
     "keep ckpts" "${SAVE_TOTAL_LIMIT}"
 
@@ -348,6 +368,7 @@ run_training() {
         --num_of_query 64 \
         --if_use_qwen_connector true \
         --prompt_difficulty "hard" \
+        --res_loss_mode "${RES_LOSS_MODE}" \
         --dataloader_num_workers "${DATALOADER_WORKERS}" \
         --save_only_model true \
         --save_total_limit "${SAVE_TOTAL_LIMIT}" \

@@ -30,7 +30,17 @@ class SFTScriptArguments:
     )
     res_loss_ratio: float = field(
         default=1.0,
-        metadata={"help": "the ratio of res loss to the total loss"}
+        metadata={"help": "the ratio of res loss to the total loss (unused)"}
+    )
+    res_loss_mode: str = field(
+        default="legacy",
+        metadata={"help": "how to aggregate the mask losses, see "
+                          "Qwen2VLSFTTrainer.compute_loss. 'legacy' reproduces the "
+                          "upstream formula, which weights the empty-mask BCE about "
+                          "3*batch_size higher than the non-empty BCE+Dice and puts "
+                          "the non-empty terms at 1/3 of lm_loss. 'norm' removes the "
+                          "empty-term over-weighting only, 'mean' removes both.",
+                  "choices": ["legacy", "norm", "mean"]}
     )
     if_detach_res_loss: bool = field(
         default=False,

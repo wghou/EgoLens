@@ -126,6 +126,11 @@ class Qwen2VLSFTTrainer(Trainer):
         self.rec_loss_ratio = rec_loss_ratio
         self.lm_loss_ratio = lm_loss_ratio
         self.if_detach_res_loss = if_detach_res_loss
+        # script_args may be None when the trainer is constructed directly.
+        self.res_loss_mode = getattr(script_args, "res_loss_mode", None) or "legacy"
+        if self.res_loss_mode not in ("legacy", "norm", "mean"):
+            raise ValueError(f"unknown res_loss_mode: {self.res_loss_mode!r}")
+        logger.info("mask loss aggregation mode: %s", self.res_loss_mode)
 
         self.bce_loss_weight = 1.0
         self.dice_loss_weight = 1.0
@@ -376,25 +381,63 @@ class Qwen2VLSFTTrainer(Trainer):
                 else:
                     loss_mask = loss_multimask
                     loss_dice = loss_multidice
-                    loss_empty = loss_emptymask
-                    
+
+                # loss_empty is not part of the multimask selection: with
+                # multimask_output=False there is a single mask slot, and the
+                # empty-mask term is plain BCE against an all-zero target.
+                loss_empty = loss_emptymask
+
                 mask_bce_loss += loss_mask.sum()
                 mask_dice_loss += loss_dice.sum()
                 mask_empty_loss += loss_empty.sum()
-                
 
-        # average
-        num_elements = batch_size * 3  # N_queries
+        # Sums so far: mask_bce_loss and mask_dice_loss over the non-empty slots,
+        # mask_empty_loss over the empty ones (the * valid / * empty factors above
+        # zero out the other side).
+        num_elements = batch_size * 3           # 3 role slots per sample
+        n_non_empty = non_empty_count.clamp(min=1.0)
+        n_empty = empty_count.clamp(min=1.0)
+
+        # Upstream divides bce/dice by num_elements but not the empty term, then
+        # scales both by batch_size. Written out, that is
+        #
+        #   res_loss = mean_non_empty(BCE + Dice) / 3  +  B * mean_empty(BCE)
+        #
+        # so the empty-mask BCE carries roughly 3*B (48 at B=16) times the weight
+        # of the terms that actually govern mask quality, and the non-empty terms
+        # additionally sit at 1/3 of lm_loss. Two separable defects, hence three
+        # modes rather than one "fix":
+        #
+        #   legacy  upstream formula, reproduces the published behaviour
+        #   norm    add the missing /num_elements, removing only the empty-term
+        #           over-weighting and keeping the extra 1/3
+        #   mean    plain means, removing both
+        if self.res_loss_mode == "legacy":
+            res_loss = (mask_bce_loss + mask_dice_loss) / num_elements / n_non_empty * batch_size \
+                       + mask_empty_loss / n_empty * batch_size
+        elif self.res_loss_mode == "norm":
+            res_loss = (mask_bce_loss + mask_dice_loss) / num_elements / n_non_empty * batch_size \
+                       + mask_empty_loss / num_elements / n_empty * batch_size
+        elif self.res_loss_mode == "mean":
+            res_loss = (mask_bce_loss + mask_dice_loss) / n_non_empty \
+                       + mask_empty_loss / n_empty
+        else:
+            raise ValueError(f"unknown res_loss_mode: {self.res_loss_mode!r}")
+
+        # Logged with the upstream definition (sum over non-empty slots divided by
+        # num_elements) in every mode, so the curves stay comparable across modes
+        # and against the released checkpoint's trainer_state.json.
         mask_bce_loss = mask_bce_loss / num_elements
         mask_dice_loss = mask_dice_loss / num_elements
-        res_loss = (mask_bce_loss + mask_dice_loss) / (non_empty_count + 1e-8) * batch_size + mask_empty_loss / (empty_count + 1e-8) * batch_size
 
         total_loss = self.lm_loss_ratio * lm_loss + self.rec_loss_ratio * res_loss
 
         self._metrics["lm_loss"].append(lm_loss.item())
         self._metrics["mask_bce_loss"].append(mask_bce_loss.item())
         self._metrics["mask_dice_loss"].append(mask_dice_loss.item())
+        self._metrics["mask_empty_loss"].append((mask_empty_loss / n_empty).item())
         self._metrics["res_loss"].append(res_loss.item())
+        self._metrics["frac_empty"].append((empty_count / num_elements).item())
 
         return total_loss
     
